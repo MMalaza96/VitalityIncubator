@@ -1,4 +1,4 @@
-package za.co.discovery.model;
+package za.co.discovery.model.request;
 
 public final class MoviesDatabaseHeaders {
 

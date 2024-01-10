@@ -9,8 +9,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import za.co.discovery.exceptions.MoviesDatabaseServiceException;
 import za.co.discovery.mapper.TitleClientResponseMapper;
+import za.co.discovery.mapper.TitlesClientResponseMapper;
 import za.co.discovery.model.response.TitleClientResponse;
 import za.co.discovery.model.response.TitleResponse;
+import za.co.discovery.model.response.TitlesClientResponse;
+import za.co.discovery.model.response.TitlesResponse;
 import za.co.discovery.utility.HttpClientUtil;
 
 import java.net.http.HttpRequest;
@@ -18,14 +21,13 @@ import java.net.http.HttpResponse;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import static za.co.discovery.model.MoviesDatabaseSubPaths.TITLES;
+import static za.co.discovery.model.request.MoviesDatabaseSubPaths.TITLES;
 
 @Service
 public class MoviesDatabaseService {
 
     private final HttpClientUtil httpClientUtil;
     private final String baseUrl;
-
     private final ObjectMapper objectMapper;
 
     @Autowired
@@ -42,7 +44,7 @@ public class MoviesDatabaseService {
                                                  final Map<String, String> headers,
                                                  final Map<String, String> queryParameters) {
         final HttpRequest httpRequest = httpClientUtil.createGETHttpRequest(
-                baseUrl + TITLES + id,
+                baseUrl + TITLES + "/" + id,
                 headers,
                 queryParameters);
 
@@ -64,12 +66,47 @@ public class MoviesDatabaseService {
                 return TitleClientResponseMapper.INSTANCE.toTitleResponse(titleClientResponse);
             } catch (final JsonProcessingException exception) {
                 throw new MoviesDatabaseServiceException(
-                        "Failed to parse json client response into MovieResultVO: "
+                        "Failed to parse json client response into TitleClientResponse: "
                                 + exception.getMessage(), exception);
             }
         } else {
             throw new MoviesDatabaseServiceException(
-                    "Failure occurred when attempting to retrieve movie result by ID, " +
+                    "Failure occurred when attempting to retrieve movie title by ID, " +
+                            "error code " + statusCode + "was returned by client");
+        }
+    }
+
+    public TitlesResponse retrieveMovieResults(final Map<String, String> headers,
+                                               final Map<String, String> queryParameters) {
+        final HttpRequest httpRequest = httpClientUtil.createGETHttpRequest(
+                baseUrl + TITLES,
+                headers,
+                queryParameters);
+
+        final HttpResponse<String> clientResponse;
+        try {
+            clientResponse = httpClientUtil.executeHttpRequest(httpRequest).get();
+        } catch (final InterruptedException | ExecutionException exception) {
+            throw new MoviesDatabaseServiceException("Failure occurred in httpClientUtil " +
+                    "when attempting to execute http request " + httpRequest, exception);
+        }
+
+        final int statusCode = clientResponse.statusCode();
+        if (HttpStatus.OK.value() == statusCode) {
+            final String jsonResponse = clientResponse.body();
+            try {
+                final TitlesClientResponse titlesClientResponse = objectMapper.readValue(
+                        jsonResponse,
+                        TitlesClientResponse.class);
+                return TitlesClientResponseMapper.INSTANCE.toTitlesResponse(titlesClientResponse);
+            } catch (final JsonProcessingException exception) {
+                throw new MoviesDatabaseServiceException(
+                        "Failed to parse json client response into TitlesClientResponse: "
+                                + exception.getMessage(), exception);
+            }
+        } else {
+            throw new MoviesDatabaseServiceException(
+                    "Failure occurred when attempting to retrieve movie titles, " +
                             "error code " + statusCode + "was returned by client");
         }
     }
