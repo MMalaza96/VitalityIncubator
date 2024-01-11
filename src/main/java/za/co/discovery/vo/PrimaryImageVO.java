@@ -16,9 +16,9 @@ public class PrimaryImageVO implements Serializable {
 
     private String id;
 
-    private int width;
+    private Integer width;
 
-    private int height;
+    private Integer height;
 
     private String url;
 

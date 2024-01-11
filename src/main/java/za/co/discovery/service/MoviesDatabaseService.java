@@ -2,14 +2,20 @@ package za.co.discovery.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.map.IMap;
 import jakarta.validation.constraints.NotNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import za.co.discovery.exceptions.MoviesDatabaseServiceException;
+import za.co.discovery.hazelcast.listeners.TitleClientResponseEntryListener;
+import za.co.discovery.hazelcast.listeners.TitlesClientResponseEntryListener;
 import za.co.discovery.mapper.TitleClientResponseMapper;
 import za.co.discovery.mapper.TitlesClientResponseMapper;
+import za.co.discovery.model.persistence.Title;
 import za.co.discovery.model.response.TitleClientResponse;
 import za.co.discovery.model.response.TitleResponse;
 import za.co.discovery.model.response.TitlesClientResponse;
@@ -18,31 +24,52 @@ import za.co.discovery.utility.HttpClientUtil;
 
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Map;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import static za.co.discovery.model.request.MoviesDatabaseSubPaths.TITLES;
 
+@Slf4j
 @Service
 public class MoviesDatabaseService {
 
+    private static IMap<String, TitleClientResponse> titleClientResponseCacheMap;
+    private static IMap<String, TitlesClientResponse> titlesClientResponseCacheMap;
     private final HttpClientUtil httpClientUtil;
     private final String baseUrl;
     private final ObjectMapper objectMapper;
+
 
     @Autowired
     public MoviesDatabaseService(final HttpClientUtil httpClientUtil,
                                  @Value("${movies-database.baseurl}")
                                  @NotNull(message = "baseUrl value cannot be null") final String baseUrl,
-                                 final ObjectMapper objectMapper) {
+                                 final ObjectMapper objectMapper,
+                                 final HazelcastInstance hazelcastInstance,
+                                 final TitleClientResponseEntryListener titleClientResponseEntryListener,
+                                 final TitlesClientResponseEntryListener titlesClientResponseEntryListener) {
         this.httpClientUtil = httpClientUtil;
         this.baseUrl = baseUrl;
         this.objectMapper = objectMapper;
+
+        titleClientResponseCacheMap = hazelcastInstance.getMap(TitleClientResponse.class.getSimpleName());
+        titlesClientResponseCacheMap = hazelcastInstance.getMap(TitlesClientResponse.class.getSimpleName());
+
+        titleClientResponseCacheMap.addEntryListener(titleClientResponseEntryListener, true);
+        titlesClientResponseCacheMap.addEntryListener(titlesClientResponseEntryListener, true);
     }
 
     public TitleResponse retrieveMovieResultById(final String id,
-                                                 final Map<String, String> headers,
-                                                 final Map<String, String> queryParameters) {
+                                                 final LinkedHashMap<String, String> headers,
+                                                 final LinkedHashMap<String, String> queryParameters) {
+        if (titleClientResponseCacheMap.containsKey(id)) {
+            log.debug("Returning cached response for Movie Result with id " + id);
+            final TitleClientResponse titleClientResponse = titleClientResponseCacheMap.get(id);
+            return TitleClientResponseMapper.INSTANCE.toTitleResponse(titleClientResponse);
+        }
+
         final HttpRequest httpRequest = httpClientUtil.createGETHttpRequest(
                 baseUrl + TITLES + "/" + id,
                 headers,
@@ -63,6 +90,9 @@ public class MoviesDatabaseService {
                 final TitleClientResponse titleClientResponse = objectMapper.readValue(
                         jsonResponse,
                         TitleClientResponse.class);
+
+                cacheRetrieveMovieResultById(id, titleClientResponse);
+
                 return TitleClientResponseMapper.INSTANCE.toTitleResponse(titleClientResponse);
             } catch (final JsonProcessingException exception) {
                 throw new MoviesDatabaseServiceException(
@@ -76,8 +106,15 @@ public class MoviesDatabaseService {
         }
     }
 
-    public TitlesResponse retrieveMovieResults(final Map<String, String> headers,
-                                               final Map<String, String> queryParameters) {
+    public TitlesResponse retrieveMovieResults(final LinkedHashMap<String, String> headers,
+                                               final LinkedHashMap<String, String> queryParameters) {
+        final String key = queryParameters.toString();
+        if (titlesClientResponseCacheMap.containsKey(key)) {
+            log.debug("Returning cached response for Movie Results with parameters " + key);
+            final TitlesClientResponse titlesClientResponse = titlesClientResponseCacheMap.get(key);
+            return TitlesClientResponseMapper.INSTANCE.toTitlesResponse(titlesClientResponse);
+        }
+
         final HttpRequest httpRequest = httpClientUtil.createGETHttpRequest(
                 baseUrl + TITLES,
                 headers,
@@ -98,6 +135,9 @@ public class MoviesDatabaseService {
                 final TitlesClientResponse titlesClientResponse = objectMapper.readValue(
                         jsonResponse,
                         TitlesClientResponse.class);
+
+                cacheRetrieveMovieResults(key, titlesClientResponse);
+
                 return TitlesClientResponseMapper.INSTANCE.toTitlesResponse(titlesClientResponse);
             } catch (final JsonProcessingException exception) {
                 throw new MoviesDatabaseServiceException(
@@ -109,6 +149,22 @@ public class MoviesDatabaseService {
                     "Failure occurred when attempting to retrieve movie titles, " +
                             "error code " + statusCode + "was returned by client");
         }
+    }
+
+    private void cacheRetrieveMovieResults(final String queryParameters,
+                                           final TitlesClientResponse titlesClientResponse) {
+        Optional<List<Title>> optionalTitles = Optional.of(titlesClientResponse.getTitles());
+        optionalTitles.ifPresent(titles -> {
+            if (!titles.isEmpty()) {
+                titlesClientResponseCacheMap.put(queryParameters, titlesClientResponse);
+            }
+        });
+    }
+
+    private void cacheRetrieveMovieResultById(final String id,
+                                              final TitleClientResponse titleClientResponse) {
+        Optional<Title> optionalTitle = Optional.of(titleClientResponse.getTitle());
+        optionalTitle.ifPresent(title -> titleClientResponseCacheMap.put(id, titleClientResponse));
     }
 
 }

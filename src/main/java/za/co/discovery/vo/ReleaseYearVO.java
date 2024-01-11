@@ -14,7 +14,7 @@ public class ReleaseYearVO implements Serializable {
 
     private static final long serialVersionUID = -4874223825552689003L;
 
-    private int year;
+    private Integer year;
 
     private Integer endYear;
 

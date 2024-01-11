@@ -18,9 +18,9 @@ public class TitleTypeVO implements Serializable {
 
     private String id;
 
-    private boolean isSeries;
+    private Boolean isSeries;
 
-    private boolean isEpisode;
+    private Boolean isEpisode;
 
     @JsonProperty("__typename")
     private String typeName;

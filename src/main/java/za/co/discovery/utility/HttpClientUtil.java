@@ -13,8 +13,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
@@ -32,8 +32,8 @@ public class HttpClientUtil {
     }
 
     public HttpRequest createGETHttpRequest(final String url,
-                                            final Map<String, String> headers,
-                                            final Map<String, String> queryParameters) {
+                                            final LinkedHashMap<String, String> headers,
+                                            final LinkedHashMap<String, String> queryParameters) {
         try {
             return HttpRequest.newBuilder()
                     .uri(buildUriWithQueryParams(url, queryParameters))
@@ -59,7 +59,7 @@ public class HttpClientUtil {
         }
     }
 
-    private URI buildUriWithQueryParams(final String baseUrl, final Map<String, String> queryParams) {
+    private URI buildUriWithQueryParams(final String baseUrl, final LinkedHashMap<String, String> queryParams) {
         final StringBuilder uriBuilder = new StringBuilder(HTTPS + baseUrl);
         if (!queryParams.isEmpty()) {
             uriBuilder.append("?");
@@ -75,7 +75,7 @@ public class HttpClientUtil {
         }
     }
 
-    private String[] buildHeadersArray(final Map<String, String> headers) {
+    private String[] buildHeadersArray(final LinkedHashMap<String, String> headers) {
         final List<String> headersArray = new ArrayList<>();
         headers.forEach((key, value) -> {
             headersArray.add(key);

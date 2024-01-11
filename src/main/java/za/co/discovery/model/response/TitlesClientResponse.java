@@ -16,7 +16,7 @@ import java.util.List;
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
-public class TitlesClientResponse implements Serializable {
+public class TitlesClientResponse implements Serializable{
 
     private static final long serialVersionUID = -820706192608392888L;
 
@@ -28,4 +28,5 @@ public class TitlesClientResponse implements Serializable {
 
     @JsonProperty(value = "results")
     private List<Title> titles;
+
 }

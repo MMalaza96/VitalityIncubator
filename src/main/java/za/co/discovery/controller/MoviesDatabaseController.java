@@ -17,6 +17,7 @@ import za.co.discovery.model.response.TitlesResponse;
 import za.co.discovery.service.MoviesDatabaseService;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static java.util.Map.entry;
@@ -53,7 +54,7 @@ public class MoviesDatabaseController {
         try {
             titleResponse = moviesDatabaseService.retrieveMovieResultById(id,
                     extractMap(entry(X_RAPID_API_KEY, x_rapid_api_key), entry(X_RAPID_API_HOST, x_rapid_api_host)),
-                    new HashMap<>());
+                    new LinkedHashMap<>());
             titleResponse.setMessage("Successfully retrieved MovieResult with id " + id);
 
             return ResponseEntity
@@ -118,8 +119,8 @@ public class MoviesDatabaseController {
     }
 
     @SafeVarargs
-    private Map<String, String> extractMap(final Map.Entry<String, String>... entries) {
-        final Map<String, String> headers = new HashMap<>();
+    private LinkedHashMap<String, String> extractMap(final Map.Entry<String, String>... entries) {
+        final LinkedHashMap<String, String> headers = new LinkedHashMap<>();
         for (Map.Entry<String, String> entry : entries) {
             headers.put(entry.getKey(), entry.getValue());
         }

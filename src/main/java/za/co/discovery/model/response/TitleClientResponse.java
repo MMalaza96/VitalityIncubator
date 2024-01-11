@@ -15,10 +15,11 @@ import java.io.Serializable;
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
-public class TitleClientResponse implements Serializable {
+public class TitleClientResponse implements Serializable{
 
     private static final long serialVersionUID = -4584704729618211070L;
 
     @JsonProperty(value = "results")
     private Title title;
+
 }

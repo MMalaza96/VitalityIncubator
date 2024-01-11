@@ -17,4 +17,5 @@ public class VitalityIncubatorSpringConfiguration {
                 .registerModule(new JavaTimeModule())
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
+
 }

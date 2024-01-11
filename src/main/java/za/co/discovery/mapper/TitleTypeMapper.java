@@ -13,8 +13,8 @@ public interface TitleTypeMapper {
 
     @Mapping(target = "text", source = "titleType.text")
     @Mapping(target = "id", source = "titleType.id")
-    @Mapping(target = "series", source = "titleType.series")
-    @Mapping(target = "episode", source = "titleType.episode")
+    @Mapping(target = "isSeries", source = "titleType.isSeries")
+    @Mapping(target = "isEpisode", source = "titleType.isEpisode")
     @Mapping(target = "typeName", source = "titleType.typeName")
     TitleTypeVO toVO(TitleType titleType);
 
