@@ -23,7 +23,7 @@ public class TitlesClientResponseSerializer implements StreamSerializer<TitlesCl
         out.writeString(String.valueOf(titlesClientResponse.getEntries()));
 
         final List<Title> titles = titlesClientResponse.getTitles();
-        out.write(titles.size());
+        out.writeInt(titles.size());
 
         for (Title title : titles) {
             out.writeObject(title);

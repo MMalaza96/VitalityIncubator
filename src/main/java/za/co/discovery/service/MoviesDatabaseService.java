@@ -2,7 +2,6 @@ package za.co.discovery.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
@@ -11,8 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import za.co.discovery.exceptions.MoviesDatabaseServiceException;
-import za.co.discovery.hazelcast.listeners.TitleClientResponseEntryListener;
-import za.co.discovery.hazelcast.listeners.TitlesClientResponseEntryListener;
+import za.co.discovery.hazelcast.cache.Cache;
 import za.co.discovery.mapper.TitleClientResponseMapper;
 import za.co.discovery.mapper.TitlesClientResponseMapper;
 import za.co.discovery.model.persistence.Title;
@@ -35,38 +33,31 @@ import static za.co.discovery.model.request.MoviesDatabaseSubPaths.TITLES;
 @Service
 public class MoviesDatabaseService {
 
-    private static IMap<String, TitleClientResponse> titleClientResponseCacheMap;
-    private static IMap<String, TitlesClientResponse> titlesClientResponseCacheMap;
     private final HttpClientUtil httpClientUtil;
     private final String baseUrl;
     private final ObjectMapper objectMapper;
-
+    private final Cache cache;
 
     @Autowired
     public MoviesDatabaseService(final HttpClientUtil httpClientUtil,
                                  @Value("${movies-database.baseurl}")
                                  @NotNull(message = "baseUrl value cannot be null") final String baseUrl,
                                  final ObjectMapper objectMapper,
-                                 final HazelcastInstance hazelcastInstance,
-                                 final TitleClientResponseEntryListener titleClientResponseEntryListener,
-                                 final TitlesClientResponseEntryListener titlesClientResponseEntryListener) {
+                                 final Cache cache) {
         this.httpClientUtil = httpClientUtil;
         this.baseUrl = baseUrl;
         this.objectMapper = objectMapper;
-
-        titleClientResponseCacheMap = hazelcastInstance.getMap(TitleClientResponse.class.getSimpleName());
-        titlesClientResponseCacheMap = hazelcastInstance.getMap(TitlesClientResponse.class.getSimpleName());
-
-        titleClientResponseCacheMap.addEntryListener(titleClientResponseEntryListener, true);
-        titlesClientResponseCacheMap.addEntryListener(titlesClientResponseEntryListener, true);
+        this.cache = cache;
     }
 
     public TitleResponse retrieveMovieResultById(final String id,
                                                  final LinkedHashMap<String, String> headers,
                                                  final LinkedHashMap<String, String> queryParameters) {
+        final IMap<String, Object> titleClientResponseCacheMap = Cache
+                .retrieveCacheMap(TitleClientResponse.class.getSimpleName());
         if (titleClientResponseCacheMap.containsKey(id)) {
             log.debug("Returning cached response for Movie Result with id " + id);
-            final TitleClientResponse titleClientResponse = titleClientResponseCacheMap.get(id);
+            final TitleClientResponse titleClientResponse = (TitleClientResponse) titleClientResponseCacheMap.get(id);
             return TitleClientResponseMapper.INSTANCE.toTitleResponse(titleClientResponse);
         }
 
@@ -108,10 +99,12 @@ public class MoviesDatabaseService {
 
     public TitlesResponse retrieveMovieResults(final LinkedHashMap<String, String> headers,
                                                final LinkedHashMap<String, String> queryParameters) {
+        final IMap<String, Object> titlesClientResponseCacheMap = Cache
+                .retrieveCacheMap(TitlesClientResponse.class.getSimpleName());
         final String key = queryParameters.toString();
         if (titlesClientResponseCacheMap.containsKey(key)) {
             log.debug("Returning cached response for Movie Results with parameters " + key);
-            final TitlesClientResponse titlesClientResponse = titlesClientResponseCacheMap.get(key);
+            final TitlesClientResponse titlesClientResponse = (TitlesClientResponse) titlesClientResponseCacheMap.get(key);
             return TitlesClientResponseMapper.INSTANCE.toTitlesResponse(titlesClientResponse);
         }
 
@@ -156,7 +149,10 @@ public class MoviesDatabaseService {
         Optional<List<Title>> optionalTitles = Optional.of(titlesClientResponse.getTitles());
         optionalTitles.ifPresent(titles -> {
             if (!titles.isEmpty()) {
-                titlesClientResponseCacheMap.put(queryParameters, titlesClientResponse);
+                Cache.cache(
+                        TitlesClientResponse.class.getSimpleName(),
+                        queryParameters,
+                        titlesClientResponse);
             }
         });
     }
@@ -164,7 +160,10 @@ public class MoviesDatabaseService {
     private void cacheRetrieveMovieResultById(final String id,
                                               final TitleClientResponse titleClientResponse) {
         Optional<Title> optionalTitle = Optional.of(titleClientResponse.getTitle());
-        optionalTitle.ifPresent(title -> titleClientResponseCacheMap.put(id, titleClientResponse));
+        optionalTitle.ifPresent(title -> Cache.cache(
+                TitleClientResponse.class.getSimpleName(),
+                id,
+                titleClientResponse));
     }
 
 }

@@ -5,21 +5,17 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.listener.EntryAddedListener;
 import com.hazelcast.map.listener.EntryRemovedListener;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import za.co.discovery.model.response.TitlesClientResponse;
 
 import java.util.UUID;
 
 @Slf4j
-@Component
 public class TitlesClientResponseEntryListener implements
         EntryAddedListener<String, TitlesClientResponse>,
         EntryRemovedListener<String, TitlesClientResponse> {
 
     private final HazelcastInstance hazelcastInstance;
 
-    @Autowired
     public TitlesClientResponseEntryListener(final HazelcastInstance hazelcastInstance) {
         this.hazelcastInstance = hazelcastInstance;
     }

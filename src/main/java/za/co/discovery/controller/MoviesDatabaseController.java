@@ -1,6 +1,7 @@
 package za.co.discovery.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -16,7 +17,6 @@ import za.co.discovery.model.response.TitleResponse;
 import za.co.discovery.model.response.TitlesResponse;
 import za.co.discovery.service.MoviesDatabaseService;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -74,16 +74,26 @@ public class MoviesDatabaseController {
     @GetMapping(path = "/movie-result", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TitlesResponse> getMovieResults(@RequestHeader(X_RAPID_API_KEY) final String x_rapid_api_key,
                                                           @RequestHeader(X_RAPID_API_HOST) final String x_rapid_api_host,
-                                                          @RequestParam(GENRE) final String genre,
-                                                          @RequestParam(START_YEAR) final String startYear,
-                                                          @RequestParam(TITLE_TYPE) final String titleType,
-                                                          @RequestParam(LIST) final String list,
-                                                          @RequestParam(YEAR) final String year,
-                                                          @RequestParam(SORT) final String sort,
-                                                          @RequestParam(PAGE) final String page,
-                                                          @RequestParam(INFO) final String info,
-                                                          @RequestParam(END_YEAR) final String endYear,
-                                                          @RequestParam(LIMIT) final String limit) {
+                                                          @RequestParam(value = GENRE, required = false, defaultValue = StringUtils.EMPTY)
+                                                              final String genre,
+                                                          @RequestParam(value = START_YEAR, required = false, defaultValue = StringUtils.EMPTY)
+                                                              final String startYear,
+                                                          @RequestParam(value = TITLE_TYPE, required = false, defaultValue = StringUtils.EMPTY)
+                                                              final String titleType,
+                                                          @RequestParam(value = LIST, required = false, defaultValue = StringUtils.EMPTY)
+                                                              final String list,
+                                                          @RequestParam(value = YEAR, required = false, defaultValue = StringUtils.EMPTY)
+                                                              final String year,
+                                                          @RequestParam(value = SORT, required = false, defaultValue = StringUtils.EMPTY)
+                                                              final String sort,
+                                                          @RequestParam(value = PAGE, required = false, defaultValue = StringUtils.EMPTY)
+                                                              final String page,
+                                                          @RequestParam(value = INFO, required = false, defaultValue = StringUtils.EMPTY)
+                                                              final String info,
+                                                          @RequestParam(value = END_YEAR, required = false, defaultValue = StringUtils.EMPTY)
+                                                              final String endYear,
+                                                          @RequestParam(value = LIMIT, required = false, defaultValue = StringUtils.EMPTY)
+                                                              final String limit) {
         TitlesResponse titlesResponse = new TitlesResponse();
         try {
             titlesResponse = moviesDatabaseService.retrieveMovieResults(

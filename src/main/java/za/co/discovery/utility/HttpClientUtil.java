@@ -63,7 +63,12 @@ public class HttpClientUtil {
         final StringBuilder uriBuilder = new StringBuilder(HTTPS + baseUrl);
         if (!queryParams.isEmpty()) {
             uriBuilder.append("?");
-            queryParams.forEach((key, value) -> uriBuilder.append(key).append("=").append(value).append("&"));
+            queryParams.forEach((key, value) -> {
+                if (value == null || value.isEmpty()) {
+                    return;
+                }
+                uriBuilder.append(key).append("=").append(value).append("&");
+            });
             uriBuilder.deleteCharAt(uriBuilder.length() - 1);
         }
 
