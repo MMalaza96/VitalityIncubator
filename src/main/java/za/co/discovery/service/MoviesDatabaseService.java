@@ -140,7 +140,7 @@ public class MoviesDatabaseService {
         } else {
             throw new MoviesDatabaseServiceException(
                     "Failure occurred when attempting to retrieve movie titles, " +
-                            "error code " + statusCode + "was returned by client");
+                            "error code " + statusCode + " was returned by client");
         }
     }
 

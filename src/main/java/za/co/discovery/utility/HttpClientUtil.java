@@ -1,6 +1,7 @@
 package za.co.discovery.utility;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -21,14 +22,15 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 
 @Component
 public class HttpClientUtil {
-
-    private static final String HTTP = "http://";
-    private static final String HTTPS = "https://";
+    private final String scheme;
     private final Integer timeout;
 
     public HttpClientUtil(@Value("${api.timeout}")
-                          @NotBlank(message = "timeout value cannot be null") String timeout) {
-        this.timeout = Integer.valueOf(timeout);
+                          @NotNull(message = "timeout value cannot be null") Integer timeout,
+                          @Value("${api.scheme}")
+                          @NotBlank(message = "scheme value cannot be null") String scheme) {
+        this.timeout = timeout;
+        this.scheme = scheme + "://";
     }
 
     public HttpRequest createGETHttpRequest(final String url,
@@ -60,7 +62,7 @@ public class HttpClientUtil {
     }
 
     private URI buildUriWithQueryParams(final String baseUrl, final LinkedHashMap<String, String> queryParams) {
-        final StringBuilder uriBuilder = new StringBuilder(HTTPS + baseUrl);
+        final StringBuilder uriBuilder = new StringBuilder(scheme + baseUrl);
         if (!queryParams.isEmpty()) {
             uriBuilder.append("?");
             queryParams.forEach((key, value) -> {
