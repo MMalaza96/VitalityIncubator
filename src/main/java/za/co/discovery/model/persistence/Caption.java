@@ -14,9 +14,7 @@ import java.io.Serializable;
 @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
-public class Caption implements Serializable {
-
-    private static final long serialVersionUID = -8819624223998289777L;
+public class Caption {
 
     private String plainText;
 

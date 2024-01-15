@@ -14,9 +14,7 @@ import java.io.Serializable;
 @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
-public class PrimaryImage implements Serializable {
-
-    private static final long serialVersionUID = 2825217977683931641L;
+public class PrimaryImage {
 
     private String id;
 

@@ -14,7 +14,7 @@ import java.io.Serializable;
 @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReleaseYear implements Serializable {
+public class ReleaseYear {
 
     private static final long serialVersionUID = -4874223825552689003L;
 

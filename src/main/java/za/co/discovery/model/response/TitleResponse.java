@@ -6,14 +6,13 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import za.co.discovery.model.persistence.Title;
 import za.co.discovery.vo.TitleVO;
 
 import java.io.Serializable;
 
 @Getter
 @Setter
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
 @AllArgsConstructor
 @NoArgsConstructor
 public class TitleResponse extends ApiResponse implements Serializable {

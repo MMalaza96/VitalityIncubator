@@ -19,7 +19,7 @@ import static za.co.discovery.config.HazelcastConfiguration.CACHED_ITEMS;
 @Component
 public class Cache {
 
-    private static Map<String, IMap<String, Object>> cacheMaps = new HashMap<>();
+    private static final Map<String, IMap<String, Object>> cacheMaps = new HashMap<>();
     private final HazelcastInstance hazelcastInstance;
 
     @Autowired
