@@ -13,9 +13,7 @@ import java.io.Serializable;
 @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
-public class Title implements Serializable {
-
-    private static final long serialVersionUID = -3444478624860834429L;
+public class Title {
 
     private String _id;
 

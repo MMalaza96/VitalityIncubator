@@ -47,9 +47,9 @@ public class MoviesDatabaseController {
     }
 
     @GetMapping(path = "/movie-result/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<TitleResponse> getMovieResults(@PathVariable final String id,
-                                                         @RequestHeader(X_RAPID_API_KEY) final String x_rapid_api_key,
-                                                         @RequestHeader(X_RAPID_API_HOST) final String x_rapid_api_host) {
+    public ResponseEntity<TitleResponse> getMovieResult(@PathVariable final String id,
+                                                        @RequestHeader(X_RAPID_API_KEY) final String x_rapid_api_key,
+                                                        @RequestHeader(X_RAPID_API_HOST) final String x_rapid_api_host) {
         TitleResponse titleResponse = new TitleResponse();
         try {
             titleResponse = moviesDatabaseService.retrieveMovieResultById(id,
@@ -74,26 +74,16 @@ public class MoviesDatabaseController {
     @GetMapping(path = "/movie-result", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TitlesResponse> getMovieResults(@RequestHeader(X_RAPID_API_KEY) final String x_rapid_api_key,
                                                           @RequestHeader(X_RAPID_API_HOST) final String x_rapid_api_host,
-                                                          @RequestParam(value = GENRE, required = false, defaultValue = StringUtils.EMPTY)
-                                                              final String genre,
-                                                          @RequestParam(value = START_YEAR, required = false, defaultValue = StringUtils.EMPTY)
-                                                              final String startYear,
-                                                          @RequestParam(value = TITLE_TYPE, required = false, defaultValue = StringUtils.EMPTY)
-                                                              final String titleType,
-                                                          @RequestParam(value = LIST, required = false, defaultValue = StringUtils.EMPTY)
-                                                              final String list,
-                                                          @RequestParam(value = YEAR, required = false, defaultValue = StringUtils.EMPTY)
-                                                              final String year,
-                                                          @RequestParam(value = SORT, required = false, defaultValue = StringUtils.EMPTY)
-                                                              final String sort,
-                                                          @RequestParam(value = PAGE, required = false, defaultValue = StringUtils.EMPTY)
-                                                              final String page,
-                                                          @RequestParam(value = INFO, required = false, defaultValue = StringUtils.EMPTY)
-                                                              final String info,
-                                                          @RequestParam(value = END_YEAR, required = false, defaultValue = StringUtils.EMPTY)
-                                                              final String endYear,
-                                                          @RequestParam(value = LIMIT, required = false, defaultValue = StringUtils.EMPTY)
-                                                              final String limit) {
+                                                          @RequestParam(value = GENRE, required = false, defaultValue = StringUtils.EMPTY) final String genre,
+                                                          @RequestParam(value = START_YEAR, required = false, defaultValue = StringUtils.EMPTY) final String startYear,
+                                                          @RequestParam(value = TITLE_TYPE, required = false, defaultValue = StringUtils.EMPTY) final String titleType,
+                                                          @RequestParam(value = LIST, required = false, defaultValue = StringUtils.EMPTY) final String list,
+                                                          @RequestParam(value = YEAR, required = false, defaultValue = StringUtils.EMPTY) final String year,
+                                                          @RequestParam(value = SORT, required = false, defaultValue = StringUtils.EMPTY) final String sort,
+                                                          @RequestParam(value = PAGE, required = false, defaultValue = StringUtils.EMPTY) final String page,
+                                                          @RequestParam(value = INFO, required = false, defaultValue = StringUtils.EMPTY) final String info,
+                                                          @RequestParam(value = END_YEAR, required = false, defaultValue = StringUtils.EMPTY) final String endYear,
+                                                          @RequestParam(value = LIMIT, required = false, defaultValue = StringUtils.EMPTY) final String limit) {
         TitlesResponse titlesResponse = new TitlesResponse();
         try {
             titlesResponse = moviesDatabaseService.retrieveMovieResults(
@@ -132,6 +122,9 @@ public class MoviesDatabaseController {
     private LinkedHashMap<String, String> extractMap(final Map.Entry<String, String>... entries) {
         final LinkedHashMap<String, String> headers = new LinkedHashMap<>();
         for (Map.Entry<String, String> entry : entries) {
+            if (entry.getValue().isEmpty()) {
+                continue;
+            }
             headers.put(entry.getKey(), entry.getValue());
         }
         return headers;

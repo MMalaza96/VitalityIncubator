@@ -36,18 +36,15 @@ public class MoviesDatabaseService {
     private final HttpClientUtil httpClientUtil;
     private final String baseUrl;
     private final ObjectMapper objectMapper;
-    private final Cache cache;
 
     @Autowired
     public MoviesDatabaseService(final HttpClientUtil httpClientUtil,
                                  @Value("${movies-database.baseurl}")
                                  @NotNull(message = "baseUrl value cannot be null") final String baseUrl,
-                                 final ObjectMapper objectMapper,
-                                 final Cache cache) {
+                                 final ObjectMapper objectMapper) {
         this.httpClientUtil = httpClientUtil;
         this.baseUrl = baseUrl;
         this.objectMapper = objectMapper;
-        this.cache = cache;
     }
 
     public TitleResponse retrieveMovieResultById(final String id,
@@ -140,7 +137,7 @@ public class MoviesDatabaseService {
         } else {
             throw new MoviesDatabaseServiceException(
                     "Failure occurred when attempting to retrieve movie titles, " +
-                            "error code " + statusCode + "was returned by client");
+                            "error code " + statusCode + " was returned by client");
         }
     }
 

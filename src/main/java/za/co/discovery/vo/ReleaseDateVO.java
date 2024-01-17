@@ -5,10 +5,14 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 @Getter
 @Setter
 @EqualsAndHashCode
-public class ReleaseDateVO {
+public class ReleaseDateVO implements Serializable {
+
+    private static final long serialVersionUID = -5160288865625385793L;
 
     private Integer day;
 
